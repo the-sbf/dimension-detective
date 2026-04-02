@@ -76,7 +76,7 @@ body{transition:background .4s ease}
 .flip-back .reframe-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#F7B41B;margin-bottom:12px}
 .split-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .split-box{flex:1;background:rgba(0,0,0,.2);border-radius:12px;padding:12px;text-align:center}
-.split-box .em{font-size:24px;display:block;margin-bottom:4px}
+.split-box .em{font-size:24px;display:block;margin-bottom:4px}.split-box .em .dim-icon{width:32px;height:32px}
 .split-box .lbl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
 .split-box .nm{font-size:14px;font-weight:700}
 .split-arrow{font-size:18px;color:#8A8780;flex-shrink:0}
@@ -111,7 +111,7 @@ body{transition:background .4s ease}
 .p3-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 10px;border-radius:14px;border:2px solid rgba(132,211,241,.15);background:rgba(132,211,241,.04);cursor:pointer;transition:all .15s;text-align:center}
 .p3-card:hover:not(.dis){border-color:rgba(132,211,241,.4);transform:translateY(-2px)}
 .p3-card.sel{border-width:2.5px;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
-.p3-card .em{font-size:24px}
+.p3-card .em{font-size:24px}.p3-card .em .dim-icon{width:32px;height:32px}
 .p3-card .nm{font-size:13px;font-weight:700;color:#F0EDE6}
 .p3-card .vb{font-size:11px;color:#8A8780;font-weight:500}
 
@@ -179,6 +179,13 @@ body{transition:background .4s ease}
 .restart-btn{display:inline-flex;align-items:center;gap:8px;background:transparent;color:#F56042;border:2px solid #F56042;border-radius:14px;padding:12px 28px;font-size:14px;font-weight:700;margin-top:10px;transition:all .2s}
 .restart-btn:hover{background:rgba(245,96,66,.08)}
 
+
+/* ═══ DIMENSION ICONS ═══ */
+.dim-icon{width:24px;height:24px;object-fit:contain;vertical-align:middle;display:inline-block;border-radius:50%}
+.p1-chip .dim-icon,.p2-chip .dim-icon,.p3-card .dim-icon{width:22px;height:22px}
+.ct-dim .dim-icon{width:20px;height:20px;margin-right:2px}
+.dim-tag .dim-icon{width:18px;height:18px}
+.p3-reveal .dim-tag .dim-icon{width:20px;height:20px}
 
 /* ═══ BACK BUTTON ═══ */
 .back-btn{display:flex;align-items:center;gap:4px;background:none;color:#8A8780;font-size:13px;font-weight:600;padding:8px 0;margin-bottom:8px;transition:color .15s;align-self:flex-start;width:auto}
@@ -285,13 +292,13 @@ body{transition:background .4s ease}
 
 <script>
 const D={
-  physical:{n:'Physical',e:'\uD83D\uDCAA',c:'#F56042',v:'Nurturing'},
-  emotional:{n:'Emotional',e:'\u2764\uFE0F',c:'#F7B41B',v:'Feeling'},
-  social:{n:'Social',e:'\uD83E\uDD1D',c:'#84D3F1',v:'Connecting'},
-  intellectual:{n:'Intellectual',e:'\uD83E\uDDE0',c:'#6B9FD4',v:'Thinking'},
-  spiritual:{n:'Spiritual',e:'\u2728',c:'#C4A0E8',v:'Purposing'},
-  environmental:{n:'Environmental',e:'\uD83C\uDF3F',c:'#6BBF6A',v:'Caring'},
-  career:{n:'Career',e:'\uD83C\uDFAF',c:'#E8925A',v:'Contributing'}
+  physical:{n:'Physical',e:'<img src="icons/physical.png" class="dim-icon" alt="Physical">',c:'#F56042',v:'Nurturing'},
+  emotional:{n:'Emotional',e:'<img src="icons/emotional.png" class="dim-icon" alt="Emotional">',c:'#F7B41B',v:'Feeling'},
+  social:{n:'Social',e:'<img src="icons/social.png" class="dim-icon" alt="Social">',c:'#84D3F1',v:'Connecting'},
+  intellectual:{n:'Intellectual',e:'<img src="icons/intellectual.png" class="dim-icon" alt="Intellectual">',c:'#6B9FD4',v:'Thinking'},
+  spiritual:{n:'Spiritual',e:'<img src="icons/spiritual.png" class="dim-icon" alt="Spiritual">',c:'#C4A0E8',v:'Purposing'},
+  environmental:{n:'Environmental',e:'<img src="icons/environmental.png" class="dim-icon" alt="Environmental">',c:'#6BBF6A',v:'Caring'},
+  career:{n:'Career',e:'<img src="icons/career.png" class="dim-icon" alt="Career">',c:'#E8925A',v:'Contributing'}
 };
 const DK=Object.keys(D);
 
@@ -699,7 +706,7 @@ function exportJPEG(){
   x.textAlign='left';var y=200;
   DK.forEach(function(k){
     var d=D[k],ct=counts[k]||0;
-    x.font='14px sans-serif';x.fillStyle='#F0EDE6';x.fillText(d.e,40,y+4);
+    x.font='14px sans-serif';x.fillStyle='#F0EDE6';x.fillText('',40,y+4);
     x.font='bold 12px DM Sans,sans-serif';x.fillStyle=d.c;x.fillText(d.n,64,y+4);
     x.fillStyle='#2A2A3A';rr(x,155,y-6,290,8,4);x.fill();
     if(ct>0){x.fillStyle=d.c;rr(x,155,y-6,290*(ct/maxC),8,4);x.fill();}
