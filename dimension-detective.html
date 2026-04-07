@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimension Detective</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:'Inter',sans-serif;cursor:pointer;border:none}
+.app{margin:0 auto;min-height:100vh;position:relative;max-width:960px;padding:0 24px}
+body{transition:background .4s ease}
+
+/* ═══ GLOBAL PROGRESS ═══ */
+.gprog{position:fixed;top:0;left:0;right:0;height:4px;z-index:100}
+.gprog-fill{height:100%;transition:width .6s cubic-bezier(.22,1,.36,1)}
+
+/* ═══ INTRO ═══ */
+.intro-wrap{color:#F0EDE6;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 4px;text-align:center}
+.intro-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,96,66,.1);border:1px solid rgba(245,96,66,.25);border-radius:100px;padding:7px 18px;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#F56042;margin-bottom:24px}
+.intro-wrap h1{font-family:'Fraunces',serif;font-size:38px;font-weight:800;line-height:1.1;margin-bottom:14px}
+.intro-wrap h1 span{color:#F56042}
+.intro-sub{font-size:15px;line-height:1.7;color:#8A8780;max-width:380px;margin-bottom:28px}
+.phase-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:400px;margin-bottom:32px}
+.pcard{border-radius:14px;padding:16px;text-align:left;border:1px solid rgba(255,255,255,.06)}
+.pcard .num{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.pcard .label{font-size:14px;font-weight:700;color:#F0EDE6}
+.pcard .desc{font-size:11px;color:#8A8780;margin-top:4px;line-height:1.4}
+.start-btn{background:#F56042;color:#fff;border-radius:14px;padding:16px 44px;font-size:16px;font-weight:700;transition:all .2s;box-shadow:0 4px 20px rgba(245,96,66,.3)}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,96,66,.35)}
+
+/* ═══ PHASE 1: THE QUICK READ — light bg, chat bubbles ═══ */
+.p1-wrap{color:#1A1A24;min-height:100dvh;padding:28px 4px 40px}
+.p1-phase{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F56042;margin-bottom:20px}
+.p1-counter{float:right;font-size:12px;color:#8A8780;font-weight:600}
+.chat-bubble{background:#fff;border:1px solid #E4E0D8;border-radius:20px 20px 20px 4px;padding:20px 22px;margin-bottom:10px;animation:bubbleIn .4s ease;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.chat-bubble .text{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.45;color:#1A1A24}
+.chat-detail{background:#F56042;border:1px solid #e5533a;border-radius:4px 20px 20px 20px;padding:14px 18px;margin-bottom:24px;animation:bubbleIn .4s ease .1s both}
+.chat-detail .text{font-size:15px;color:#fff;line-height:1.6;font-weight:600;font-style:italic}
+.p1-prompt{font-size:12px;color:#F56042;font-weight:600;margin-bottom:14px}
+.p1-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.p1-chip{display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:100px;background:#fff;border:2px solid #DDD9D0;font-size:13px;font-weight:600;color:#1A1A24;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.p1-chip:hover{border-color:#8A8780;transform:translateY(-1px)}
+.p1-chip.sel{border-width:2.5px}
+.p1-chip .em{font-size:16px}
+.p1-lock{width:100%;padding:16px;border-radius:14px;background:#F56042;color:#fff;font-size:15px;font-weight:700;transition:all .2s}
+.p1-lock:disabled{opacity:.3;cursor:not-allowed}
+
+/* P1 reveal */
+.p1-reveal-notif{background:#fff;border:1px solid #E4E0D8;border-radius:16px;padding:20px;margin-top:16px;animation:slideUp .35s ease;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.p1-reveal-notif .hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.p1-reveal-notif .icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.p1-reveal-notif .icon.hit{background:rgba(91,191,138,.15)}.p1-reveal-notif .icon.cl{background:rgba(247,180,27,.15)}.p1-reveal-notif .icon.ms{background:rgba(245,96,66,.1)}
+.p1-reveal-notif .title{font-size:14px;font-weight:700;color:#1A1A24}
+.p1-reveal-notif .body{font-size:13.5px;line-height:1.7;color:#5A5850}
+.p1-reveal-notif .body strong{color:#1A1A24}
+.p1-reveal-notif .tag{display:block;background:#F5F0E0;border-left:3px solid #F7B41B;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;font-weight:600;color:#7A6A2A;margin-top:16px;line-height:1.4}
+.p1-chip.correct{background:rgba(91,191,138,.1);border-color:#5BBF8A}
+.p1-chip.also{background:rgba(132,211,241,.08);border-color:#84D3F1}
+.p1-chip.miss{opacity:.35}
+
+/* ═══ PHASE 2: THE FLIP — amber palette, card flip ═══ */
+.p2-wrap{color:#F0EDE6;min-height:100dvh;padding:28px 4px 40px}
+.p2-phase{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F7B41B;margin-bottom:20px}
+.p2-counter{float:right;font-size:12px;color:#8A8780;font-weight:600}
+.flip-container{margin-bottom:20px}
+.flip-card{position:relative;width:100%}
+.flip-front,.flip-back{border-radius:20px;padding:24px 22px;width:100%}
+.flip-front{background:#24244a;border:1px solid #35356a}
+.flip-back{background:#24244a;border:1px solid #F7B41B;animation:flipIn .5s ease}
+@keyframes flipIn{from{opacity:0;transform:rotateY(90deg) scale(.95)}to{opacity:1;transform:rotateY(0) scale(1)}}
+.flip-front .sc-text{font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.45}
+.flip-front .sc-detail{font-size:14px;color:#C4C0B8;margin-top:8px;line-height:1.6}
+.flip-front .sc-num{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#F7B41B;margin-bottom:10px}
+.flip-back .reframe-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#F7B41B;margin-bottom:12px}
+.split-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.split-box{flex:1;background:rgba(0,0,0,.2);border-radius:12px;padding:12px;text-align:center}
+.split-box .em{font-size:24px;display:block;margin-bottom:4px}
+.split-box .lbl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.split-box .nm{font-size:14px;font-weight:700}
+.split-arrow{font-size:18px;color:#8A8780;flex-shrink:0}
+.flip-back .expl{font-size:13.5px;line-height:1.7;color:#C4C0B8}
+.flip-back .expl strong{color:#F0EDE6}
+.flip-back .tag{display:block;background:rgba(247,180,27,.06);border-left:3px solid #F7B41B;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;font-weight:600;color:#F7B41B;margin-top:16px;line-height:1.4}
+.p2-prompt{font-size:12px;color:#F7B41B;font-weight:600;margin-bottom:14px}
+.p2-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.p2-chip{display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:100px;background:#24244a;border:2px solid #35356a;font-size:13px;font-weight:600;color:#F0EDE6;transition:all .15s}
+.p2-chip:hover{border-color:#8A8780;transform:translateY(-1px)}
+.p2-chip.sel{border-width:2.5px}
+.p2-chip .em{font-size:16px}
+.p2-lock{width:100%;padding:16px;border-radius:14px;background:#F7B41B;color:#27265F;font-size:15px;font-weight:700;transition:all .2s}
+.p2-lock:disabled{opacity:.3;cursor:not-allowed}
+
+/* ═══ PHASE 3: THE TANGLE — cool/powder palette, web connections ═══ */
+.p3-wrap{color:#F0EDE6;min-height:100dvh;padding:28px 4px 40px}
+.p3-phase{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#84D3F1;margin-bottom:20px}
+.p3-counter{float:right;font-size:12px;color:#8A8780;font-weight:600}
+.p3-scenario{background:rgba(132,211,241,.06);border:1px solid rgba(132,211,241,.15);border-radius:20px;padding:24px 22px;margin-bottom:20px;text-align:center}
+.p3-scenario .sc-num{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#84D3F1;margin-bottom:10px}
+.p3-scenario .sc-text{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.45}
+.p3-scenario .sc-detail{font-size:14px;color:#8A8780;margin-top:8px}
+.p3-prompt{font-size:12px;color:#84D3F1;font-weight:600;margin-bottom:14px;text-align:center}
+.p3-lock{width:100%;padding:16px;border-radius:14px;background:#84D3F1;color:#0e1520;font-size:15px;font-weight:700;transition:all .2s}
+.p3-lock:disabled{opacity:.3;cursor:not-allowed}
+.p3-zone{min-height:52px;border:2px dashed rgba(132,211,241,.2);border-radius:14px;padding:10px 14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;transition:all .2s}
+.p3-picked{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:100px;font-size:13px;font-weight:600;border:2px solid;cursor:pointer;animation:popIn .25s ease;transition:opacity .15s}
+.p3-picked:hover{opacity:.7}
+.p3-zone-msg{font-size:12px;color:#8A8780;font-weight:500}
+.p3-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.p3-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 10px;border-radius:14px;border:2px solid rgba(132,211,241,.15);background:rgba(132,211,241,.04);cursor:pointer;transition:all .15s;text-align:center}
+.p3-card:hover:not(.dis){border-color:rgba(132,211,241,.4);transform:translateY(-2px)}
+.p3-card.sel{border-width:2.5px;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.p3-card .em{font-size:24px}
+.p3-card .nm{font-size:13px;font-weight:700;color:#F0EDE6}
+.p3-card .vb{font-size:11px;color:#8A8780;font-weight:500}
+
+/* P3 reveal */
+.p3-reveal{background:rgba(132,211,241,.06);border:1px solid rgba(132,211,241,.2);border-radius:16px;padding:20px;margin-bottom:16px;animation:popIn .4s ease}
+.p3-reveal .hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.p3-reveal .icon{font-size:18px}
+.p3-reveal .title{font-size:14px;font-weight:700}
+.p3-reveal .dims{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.p3-reveal .dim-tag{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600}
+.p3-reveal .body{font-size:13.5px;line-height:1.7;color:#C4C0B8}
+.p3-reveal .body strong{color:#F0EDE6}
+.p3-reveal .tag{display:block;background:rgba(132,211,241,.05);border-left:3px solid #84D3F1;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;font-weight:600;color:#84D3F1;margin-top:16px;line-height:1.4}
+
+/* ═══ PHASE 4: THE CHAIN — dark cinematic ═══ */
+.p4-wrap{color:#F0EDE6;min-height:100dvh;padding:28px 4px 40px;display:flex;flex-direction:column;justify-content:center}
+.p4-phase{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#C4A0E8;margin-bottom:20px;text-align:center}
+.p4-counter{font-size:12px;color:#8A8780;font-weight:600;text-align:center}
+.typewriter{font-family:'Fraunces',serif;font-size:22px;font-weight:600;line-height:1.5;text-align:center;max-width:420px;margin:40px auto 16px;min-height:80px}
+.type-detail{font-size:14px;color:#8A8780;text-align:center;margin-bottom:40px;opacity:0;animation:fadeIn .6s ease .8s both}
+.type-cursor{display:inline-block;width:2px;height:1.1em;background:#C4A0E8;margin-left:2px;animation:blink 1s steps(1) infinite;vertical-align:text-bottom}
+.p4-btn{display:block;margin:0 auto;padding:16px 36px;border-radius:14px;font-size:15px;font-weight:700;transition:all .2s}
+.p4-btn:hover{transform:translateY(-2px)}
+.p4-part2{text-align:center;max-width:420px;margin:0 auto 32px;animation:fadeIn .6s ease}
+.p4-part2 .lbl{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#F7B41B;margin-bottom:10px}
+.p4-part2 .txt{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.5}
+.cascade-timeline{max-width:380px;margin:0 auto 32px}
+.ct-step{display:flex;align-items:flex-start;gap:14px;margin-bottom:0}
+.ct-track{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.ct-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;opacity:0;animation:dotIn .3s ease both}
+.ct-line{width:2px;height:32px;opacity:0;animation:lineIn .3s ease both}
+.ct-info{padding-bottom:20px;opacity:0;animation:fadeIn .3s ease both}
+.ct-dim{font-size:14px;font-weight:700}
+.ct-note{font-size:12px;color:#8A8780;margin-top:2px}
+.p4-expl{max-width:420px;margin:0 auto 24px;padding:20px;background:rgba(196,160,232,.06);border:1px solid rgba(196,160,232,.15);border-radius:16px;animation:fadeIn .4s ease 2.5s both}
+.p4-expl .body{font-size:13.5px;line-height:1.7;color:#C4C0B8}
+.p4-expl .body strong{color:#F0EDE6}
+.p4-expl .tag{display:block;background:rgba(196,160,232,.05);border-left:3px solid #C4A0E8;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;font-weight:600;color:#C4A0E8;margin-top:16px;line-height:1.4}
+
+/* ═══ RESULTS ═══ */
+.results-wrap{color:#F0EDE6;min-height:100dvh;padding:32px 4px 60px}
+.results-wrap .header{text-align:center;margin-bottom:28px;animation:fadeUp .5s ease}
+.res-score{font-family:'Fraunces',serif;font-size:56px;font-weight:800;color:#F56042}
+.res-sub{font-size:13px;color:#8A8780;margin-bottom:4px}
+.res-title{font-family:'Fraunces',serif;font-size:24px;font-weight:800;margin:10px 0 8px}
+.res-msg{font-size:14px;line-height:1.7;color:#C4C0B8;max-width:400px;margin:0 auto}
+.pattern-card{background:#1A1A24;border:1px solid #2A2A3A;border-radius:16px;padding:20px;margin-bottom:16px;animation:fadeUp .5s ease .1s both}
+.pattern-card h3{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:4px;color:#F7B41B}
+.pattern-card .sub{font-size:12px;color:#8A8780;margin-bottom:14px}
+.pat-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pat-bar .em{font-size:15px;width:22px;text-align:center}
+.pat-bar .nm{font-size:12px;font-weight:600;width:85px}
+.pat-bar .track{flex:1;height:8px;background:#2A2A3A;border-radius:4px;overflow:hidden}
+.pat-bar .fill{height:100%;border-radius:4px;transition:width .8s ease}
+.pat-bar .ct{font-size:12px;font-weight:700;color:#8A8780;width:18px;text-align:right}
+.provocation{background:#1A1A24;border:1px solid #2A2A3A;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px;animation:fadeUp .5s ease .2s both}
+.provocation .q{font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.45;margin-bottom:6px}
+.provocation .s{font-size:12px;color:#8A8780}
+.takeaway{background:#1A1A24;border:1px solid #2A2A3A;border-radius:16px;padding:22px 20px;margin-bottom:20px;animation:fadeUp .5s ease .3s both}
+.takeaway h3{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:8px;color:#F7B41B}
+.takeaway p{font-size:13.5px;line-height:1.7;color:#C4C0B8}
+.res-actions{text-align:center;animation:fadeUp .5s ease .4s both}
+.export-btn{display:inline-flex;align-items:center;gap:8px;background:#F56042;color:#fff;border-radius:14px;padding:14px 28px;font-size:14px;font-weight:700;transition:all .2s}
+.export-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,96,66,.3)}
+.restart-btn{display:inline-flex;align-items:center;gap:8px;background:transparent;color:#F56042;border:2px solid #F56042;border-radius:14px;padding:12px 28px;font-size:14px;font-weight:700;margin-top:10px;transition:all .2s}
+.restart-btn:hover{background:rgba(245,96,66,.08)}
+
+
+/* ═══ BACK BUTTON ═══ */
+.back-btn{display:flex;align-items:center;gap:4px;background:none;color:#8A8780;font-size:13px;font-weight:600;padding:8px 0;margin-bottom:8px;transition:color .15s;align-self:flex-start;width:auto}
+.back-btn:hover{color:#F0EDE6}
+.back-btn.light{color:#8A8780}.back-btn.light:hover{color:#1A1A24}
+
+/* ═══ PHASE INTROS ═══ */
+.phase-intro{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 4px;text-align:center}
+.pi-num{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.pi-title{font-family:'Fraunces',serif;font-size:32px;font-weight:800;line-height:1.15;color:#F0EDE6;margin-bottom:12px}
+.pi-desc{font-size:15px;line-height:1.7;color:#8A8780;max-width:380px;margin-bottom:10px}
+.pi-task{font-size:14px;font-weight:600;line-height:1.6;max-width:360px;margin-bottom:32px}
+.pi-btn{border-radius:14px;padding:16px 44px;font-size:16px;font-weight:700;color:#fff;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.pi-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes dotIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+@keyframes lineIn{from{opacity:0;height:0}to{opacity:1;height:32px}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes flipHint{0%,100%{transform:rotateY(0)}50%{transform:rotateY(8deg)}}
+
+/* ═══ DIMENSION ICONS ═══ */
+.dim-icon{width:1em;height:1em;vertical-align:middle;object-fit:contain;display:inline-block}
+.p1-chip .dim-icon,.p2-chip .dim-icon{width:20px;height:20px}
+.p3-card .dim-icon{width:32px;height:32px}
+.ct-dim .dim-icon{width:18px;height:18px}
+.dim-tag .dim-icon{width:18px;height:18px}
+.pat-bar .dim-icon{width:18px;height:18px}
+.split-box .dim-icon{width:32px;height:32px}
+
+@media(max-width:480px){
+  .intro-wrap h1{font-size:30px}
+  .typewriter{font-size:19px}
+  .res-score{font-size:44px}
+  .phase-cards{grid-template-columns:1fr 1fr;gap:8px}
+  .pcard{padding:12px}
+  .split-row{flex-direction:column;gap:8px}
+  .split-arrow{transform:rotate(90deg)}
+}
+
+@media(max-height:500px){
+  .intro-wrap{padding:20px 4px;min-height:auto}
+  .intro-wrap h1{font-size:26px;margin-bottom:10px}
+  .intro-sub{font-size:13px;margin-bottom:16px}
+  .phase-cards{margin-bottom:16px;gap:6px}
+  .pcard{padding:10px}
+  .pcard .label{font-size:12px}
+  .pcard .desc{font-size:10px}
+  .start-btn{padding:12px 32px;font-size:14px}
+  .p1-wrap,.p2-wrap,.p3-wrap,.p4-wrap,.results-wrap{min-height:auto;padding-top:16px;padding-bottom:24px}
+  .chat-bubble{padding:14px 16px}
+  .chat-bubble .text{font-size:16px}
+  .chat-detail{padding:10px 14px}
+  .p1-chip,.p2-chip,.dim-chip{padding:8px 12px;font-size:12px}
+  .p1-lock,.p2-lock,.p3-lock,.p4-btn{padding:12px;font-size:14px}
+  .p3-scenario .sc-text{font-size:16px}
+  .typewriter{font-size:17px;margin:20px auto 10px}
+  .type-detail{margin-bottom:20px}
+  .cascade-card{padding:16px}
+  .sc-text{font-size:16px}
+  .p4-wrap{min-height:auto;justify-content:flex-start;padding-top:20px}
+  .results-wrap{padding-top:16px;padding-bottom:32px}
+  .res-score{font-size:40px}
+  .res-title{font-size:20px}
+  .pattern-card,.provocation,.takeaway{padding:16px}
+  .provocation .q{font-size:16px}
+}
+
+/* ═══ PORTRAIT LOCK OVERLAY ═══ */
+.rotate-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#111118;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;color:#F0EDE6}
+.rotate-overlay .rotate-icon{font-size:48px;margin-bottom:20px;animation:rotateHint 2s ease-in-out infinite}
+.rotate-overlay h2{font-family:'Fraunces',serif;font-size:22px;font-weight:800;margin-bottom:10px}
+.rotate-overlay p{font-size:14px;color:#8A8780;line-height:1.6;max-width:280px}
+@keyframes rotateHint{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-90deg)}75%{transform:rotate(-90deg)}}
+@media(orientation:portrait) and (max-width:900px){
+  .rotate-overlay{display:flex}
+}
+
+/* ═══ LANDSCAPE TWO-COLUMN LAYOUT ═══ */
+.ls-grid{display:block}
+@media(min-width:700px){
+  .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+  .ls-left,.ls-right{min-width:0}
+  .ls-right{display:flex;flex-direction:column}
+  .intro-wrap,.phase-intro,.results-wrap{max-width:700px;margin:0 auto}
+  .p1-wrap,.p2-wrap,.p3-wrap{padding-top:32px}
+  .chat-bubble{margin-bottom:8px}
+  .chat-detail{margin-bottom:0}
+  .p1-chips,.p2-chips{margin-bottom:16px}
+  .p3-grid{margin-bottom:16px}
+  .p3-scenario{margin-bottom:0;text-align:left}
+  .flip-front{margin-bottom:0}
+  .p1-prompt,.p2-prompt,.p3-prompt{margin-bottom:12px}
+  .p1-reveal-notif{margin-top:0}
+  .p4-wrap{align-items:center}
+  .typewriter{margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="rotate-overlay">
+  <div class="rotate-icon">📱</div>
+  <h2>Rotate Your Phone</h2>
+  <p>This experience works best in landscape mode. Please turn your phone sideways.</p>
+</div>
+<div class="gprog"><div class="gprog-fill" id="gprog"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+const ICO='dimension-detective/icons/';
+const D={
+  physical:{n:'Physical',e:'<img class="dim-icon" src="'+ICO+'physical.png" alt="Physical">',c:'#F56042',v:'Nurturing'},
+  emotional:{n:'Emotional',e:'<img class="dim-icon" src="'+ICO+'emotional.png" alt="Emotional">',c:'#F7B41B',v:'Feeling'},
+  social:{n:'Social',e:'<img class="dim-icon" src="'+ICO+'social.png" alt="Social">',c:'#84D3F1',v:'Connecting'},
+  intellectual:{n:'Intellectual',e:'<img class="dim-icon" src="'+ICO+'intellectual.png" alt="Intellectual">',c:'#6B9FD4',v:'Thinking'},
+  spiritual:{n:'Spiritual',e:'<img class="dim-icon" src="'+ICO+'spiritual.png" alt="Spiritual">',c:'#C4A0E8',v:'Purposing'},
+  environmental:{n:'Environmental',e:'<img class="dim-icon" src="'+ICO+'environmental.png" alt="Environmental">',c:'#6BBF6A',v:'Caring'},
+  career:{n:'Career',e:'<img class="dim-icon" src="'+ICO+'career.png" alt="Career">',c:'#E8925A',v:'Contributing'}
+};
+const DK=Object.keys(D);
+
+const SC=[
+  {p:1,num:'1 of 7',text:"Your teacher asks a question in class. You know the answer. But the kids around you are already raising their hands, speaking confidently, like it\u2019s nothing.",detail:"You stay quiet. Again.",primary:['social'],also:['emotional','intellectual'],expl:"This isn\u2019t about intelligence \u2014 you <strong>know</strong> the answer. It\u2019s a <strong>Social</strong> wellness issue: the room doesn\u2019t feel like yours yet. When everyone around you seems to belong effortlessly, raising your hand feels like a risk. But staying quiet costs you <strong>Intellectually</strong> (you\u2019re not practising your own thinking out loud) and <strong>Emotionally</strong> (swallowing what you know takes energy every single time).",tag:"Belonging shapes how you show up."},
+  {p:1,num:'2 of 7',text:"Everyone\u2019s talking about university requirements \u2014 minimum points, which degrees need Pure Maths, which schools \u201Clook better\u201D on applications.",detail:"You haven\u2019t even figured out what you want to study yet. You just smile and nod.",primary:['career'],also:['emotional','spiritual'],expl:"The conversation is about <strong>Career</strong> wellness \u2014 your future path. But the reason it\u2019s stressful isn\u2019t that you don\u2019t have a plan. It\u2019s that everyone else seems to, and you feel behind. The <strong>Emotional</strong> weight of faking confidence is real. And the deeper question \u2014 do I even want what they want? \u2014 is <strong>Spiritual</strong>.",tag:"Not having a plan yet is not the same as being behind."},
+  {p:2,num:'3 of 7',text:"Your parents keep telling family and neighbours about your marks and your scholarship. They\u2019re proud.",detail:"You should feel good about it \u2014 but lately you just feel pressure.",primary:['spiritual'],also:['emotional','social'],rf:'emotional',expl:"Most people pick <strong>Emotional</strong> \u2014 and the pressure is real. But the deeper issue is <strong>Spiritual</strong>: whose definition of success are you carrying? When external pride doesn\u2019t match your internal experience, that\u2019s a values question.",tag:"External pride \u2260 internal purpose."},
+  {p:2,num:'4 of 7',text:"You chose Pure Maths in Grade 10 to keep all your options open. Now, even though you\u2019ve been following your SDP and used every support available, you\u2019re really struggling to pass. You\u2019ve heard Maths Lit is \u201Cfor people who can\u2019t cope.\u201D",detail:"You don\u2019t know whether switching is giving up or being smart.",primary:['spiritual'],also:['career','emotional'],rf:'intellectual',expl:"The surface looks <strong>Intellectual</strong> \u2014 you\u2019re battling the content. But the real issue is <strong>Spiritual</strong>: your identity is tangled up in being \u201Ca Pure Maths person.\u201D Switching feels like admitting something about yourself that others will judge. That shame is doing more damage than the marks. And <strong>Career</strong> is real too \u2014 you\u2019re making this decision based on which doors might close, not what you actually need.",tag:"Choosing what\u2019s right for you isn\u2019t the same as giving up."},
+  {p:3,num:'5 of 7',text:"Your friends from where you grew up say you\u2019ve changed since you started high school. Your friends at school don\u2019t know much about your life at home.",detail:"You\u2019re not sure which version of you is the real one.",primary:['social','spiritual'],also:['emotional'],expl:"Equally <strong>Social</strong> (navigating two worlds, code-switching, belonging) and <strong>Spiritual</strong> (identity \u2014 who am I when I stop performing?). The <strong>Emotional</strong> weight of carrying two selves is what makes it exhausting.",tag:"Two worlds, one you. Both dimensions are primary."},
+  {p:3,num:'6 of 7',text:"You got elected to Students Council. Everyone congratulated you. But three weeks in, you\u2019re behind on schoolwork, your friends say you\u2019re never around, and teachers expect you to solve problems that aren\u2019t yours.",detail:"You wanted this. You think.",primary:['emotional','social'],also:['career','intellectual'],expl:"The leadership role is building your <strong>Career</strong> profile and it looks great on paper. But <strong>Emotionally</strong> you\u2019re running on empty, and <strong>Socially</strong> you\u2019re losing the people who actually know you. Neither dimension is more primary \u2014 the role is costing you in one place while building you in another. That tension is the point: Wellness Dimensions can work against each other, not just with each other.",tag:"A title that costs you your people isn\u2019t just a win."},
+  {p:4,num:'7 of 7',cascade:true,text:"You stay up late finishing a History essay because you refuse to hand in anything less than your best.",detail:"You\u2019ve done this before. You\u2019ll do it again.",part2:"You realise you do this every time \u2014 not because you love History, but because you\u2019re terrified of what a bad mark would mean.",chain:[{d:'physical',n:'Sleep gone'},{d:'intellectual',n:"Can\u2019t think tomorrow"},{d:'emotional',n:'Fear is driving this'},{d:'spiritual',n:'What does this mark mean to you?'},{d:'career',n:'The stakes feel life-or-death'}],expl:"One situation. Five dimensions. The late night is <strong>Physical</strong>. The fog tomorrow is <strong>Intellectual</strong>. The fear underneath is <strong>Emotional</strong>. What a mark means is <strong>Spiritual</strong>. Why it feels life-or-death is <strong>Career</strong>. This is wellness: one chain where pulling any link moves all the others.",tag:"One scenario. Five dimensions. One connected system."}
+];
+
+let st={scr:'intro',i:0,pk:[],ans:[],flipped:false};
+const el=()=>document.getElementById('app');
+const gp=()=>document.getElementById('gprog');
+
+function updProg(){
+  var pct=(st.i/SC.length)*100;
+  var clrs=['#F56042','#F56042','#F7B41B','#F7B41B','#84D3F1','#84D3F1','#C4A0E8'];
+  var c=st.i<SC.length?clrs[st.i]:'#C4A0E8';
+  if(st.scr==='intro'||st.scr==='p1i'){pct=0;c='#F56042'}
+  else if(st.scr==='p2i'){c='#F7B41B'}
+  else if(st.scr==='p3i'){c='#84D3F1'}
+  else if(st.scr==='p4i'){c='#C4A0E8'}
+  if(st.scr==='results'){pct=100;c='#F56042'}
+  gp().style.width=pct+'%';gp().style.background=c;
+}
+
+function setBg(){
+  var bg='#111118';
+  var s=st.scr;
+  if(s==='intro')bg='#111118';
+  else if(s==='p1i')bg='#111118';
+  else if(s==='p1'||s==='p1r')bg='#F5F2ED';
+  else if(s==='p2i')bg='#111118';
+  else if(s==='p2')bg='#1a1a3a';else if(s==='p2r')bg='#1e1428';
+  else if(s==='p3i')bg='#111118';
+  else if(s==='p3'||s==='p3r')bg='#0e1520';
+  else if(s==='p4i')bg='#111118';
+  else if(s==='c1'||s==='c2'||s==='cr'||s==='ce')bg='#0a0a0f';
+  else if(s==='results'||s==='closing')bg='#111118';
+  document.body.style.background=bg;
+}
+
+function sc(s,pk){
+  if(s.cascade)return'cascade';
+  if(s.primary.length===2){
+    if(s.primary.every(function(p){return pk.indexOf(p)>-1}))return'exact';
+    if(s.primary.some(function(p){return pk.indexOf(p)>-1}))return'partial';
+    return(s.also||[]).some(function(p){return pk.indexOf(p)>-1})?'partial':'miss';
+  }
+  if(s.primary.indexOf(pk[0])>-1)return'exact';
+  if((s.also||[]).indexOf(pk[0])>-1)return'partial';
+  return'miss';
+}
+
+function R(){
+  updProg();setBg();
+  ({intro:rI,p1i:rP1I,p1:rP1,p1r:rP1R,p2i:rP2I,p2:rP2,p2r:rP2R,p3i:rP3I,p3:rP3,p3r:rP3R,p4i:rP4I,c1:rC1,c2:rC2,cr:rCR,ce:rCE,results:rRes,closing:rClosing})[st.scr](el());
+}
+
+var BB='<button class="back-btn" onclick="goBack()">\u2190 Back</button>';
+var BBL='<button class="back-btn light" onclick="goBack()">\u2190 Back</button>';
+
+/* ═══ INTRO ═══ */
+function rI(a){
+  a.innerHTML='<div class="intro-wrap">'
+    +'<div class="intro-badge">\uD83D\uDD0D Welcome to Wellness</div>'
+    +'<h1>Dimension <span>Detective</span></h1>'
+    +'<p class="intro-sub">7 real scenarios. 7 Wellness Dimensions. Each round plays differently.</p>'
+    +'<div class="phase-cards">'
+      +'<div class="pcard" style="background:rgba(245,96,66,.06)"><div class="num" style="color:#F56042">Phase 1</div><div class="label">The Quick Read</div><div class="desc">Chat bubbles. Tap fast.</div></div>'
+      +'<div class="pcard" style="background:rgba(247,180,27,.06)"><div class="num" style="color:#F7B41B">Phase 2</div><div class="label">The Flip</div><div class="desc">Pick, then watch it reframe.</div></div>'
+      +'<div class="pcard" style="background:rgba(132,211,241,.06)"><div class="num" style="color:#84D3F1">Phase 3</div><div class="label">The Tangle</div><div class="desc">Two dimensions. Pick both.</div></div>'
+      +'<div class="pcard" style="background:rgba(196,160,232,.06)"><div class="num" style="color:#C4A0E8">Phase 4</div><div class="label">The Chain</div><div class="desc">Just watch it unfold.</div></div>'
+    +'</div>'
+    +'<button class="start-btn" onclick="go()">Let\u2019s go \u2192</button></div>';
+}
+
+/* ═══ PHASE INTROS ═══ */
+function rP1I(a){
+  a.innerHTML='<div class="phase-intro">'+BB+'<div class="pi-num" style="color:#F56042">Phase 1 of 4</div>'
+    +'<div class="pi-title">\uD83D\uDD0D The Quick Read</div>'
+    +'<p class="pi-desc">You\u2019ll read a real scenario and pick the <strong style="color:#F0EDE6">one Wellness Dimension</strong> you think is most at play.</p>'
+    +'<p class="pi-task" style="color:#F56042">Your job: spot the single biggest dimension.</p>'
+    +'<button class="pi-btn" style="background:#F56042" onclick="st.scr=\'p1\';R();s0()">Start Phase 1 \u2192</button></div>';
+}
+function rP2I(a){
+  a.innerHTML='<div class="phase-intro">'+BB+'<div class="pi-num" style="color:#F7B41B">Phase 2 of 4</div>'
+    +'<div class="pi-title">\uD83D\uDD04 The Flip</div>'
+    +'<p class="pi-desc">These scenarios look straightforward \u2014 but the obvious answer isn\u2019t always the primary one. Pick what you think is the <strong style="color:#F0EDE6">primary Wellness Dimension</strong>, then watch the reframe.</p>'
+    +'<p class="pi-task" style="color:#F7B41B">Your job: look past the surface to the deeper dimension.</p>'
+    +'<button class="pi-btn" style="background:#F7B41B;color:#27265F" onclick="st.scr=\'p2\';R();s0()">Start Phase 2 \u2192</button></div>';
+}
+function rP3I(a){
+  a.innerHTML='<div class="phase-intro">'+BB+'<div class="pi-num" style="color:#84D3F1">Phase 3 of 4</div>'
+    +'<div class="pi-title">\uD83D\uDD17 The Tangle</div>'
+    +'<p class="pi-desc">Now it gets harder. These scenarios don\u2019t have one primary dimension \u2014 <strong style="color:#F0EDE6">two Wellness Dimensions are equally at play</strong>. Your job is to find both.</p>'
+    +'<p class="pi-task" style="color:#84D3F1">Your job: pick the two dimensions that matter equally.</p>'
+    +'<button class="pi-btn" style="background:#84D3F1;color:#0e1520" onclick="st.scr=\'p3\';R();s0()">Start Phase 3 \u2192</button></div>';
+}
+function rP4I(a){
+  a.innerHTML='<div class="phase-intro">'+BB+'<div class="pi-num" style="color:#C4A0E8">Phase 4 of 4</div>'
+    +'<div class="pi-title">\u26D3\uFE0F The Chain</div>'
+    +'<p class="pi-desc">No picking this time. One situation. You\u2019ll watch how it <strong style="color:#F0EDE6">cascades across multiple Wellness Dimensions</strong> \u2014 pulling one link moves all the others.</p>'
+    +'<p class="pi-task" style="color:#C4A0E8">Your job: just watch it unfold.</p>'
+    +'<button class="pi-btn" style="background:#C4A0E8;color:#0a0a0f" onclick="st.scr=\'c1\';R();s0()">Start Phase 4 \u2192</button></div>';
+}
+
+/* ═══ PHASE 1 ═══ */
+function rP1(a){
+  var s=SC[st.i],sel=st.pk[0]||null;
+  var chips=DK.map(function(k){var d=D[k],isSel=k===sel;return'<div class="p1-chip'+(isSel?' sel':'')+'" onclick="pk1(\''+k+'\')" style="'+(isSel?'border-color:'+d.c+';background:'+d.c+'12':'')+'"><span class="em">'+d.e+'</span>'+d.n+'</div>'}).join('');
+  a.innerHTML='<div class="p1-wrap">'+BBL+'<div class="p1-phase"><span class="p1-counter">'+s.num+'</span>\uD83D\uDD0D Phase 1: The Quick Read</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="chat-bubble"><div class="text">'+s.text+'</div></div>'
+    +'<div class="chat-detail"><div class="text">'+s.detail+'</div></div>'
+    +'</div><div class="ls-right">'
+    +'<div class="p1-prompt">\uD83D\uDC46 Which single Wellness Dimension is most at play here?</div>'
+    +'<div class="p1-chips">'+chips+'</div>'
+    +'<button class="p1-lock" onclick="sub1()"'+(sel?'':' disabled')+'>That\u2019s my answer</button>'
+    +'</div></div></div>';
+}
+
+function rP1R(a){
+  var an=st.ans[st.ans.length-1],s=SC[st.i],pr=s.primary,al=s.also||[];
+  var ic,ti;
+  if(an.r==='exact'){ic='<div class="icon hit">\u2713</div>';ti='Nailed it!';}
+  else if(an.r==='partial'){ic='<div class="icon cl">\u25D0</div>';ti='Close \u2014 part of it.';}
+  else{ic='<div class="icon ms">\u2717</div>';ti='Not quite:';}
+  var chips=DK.map(function(k){var d=D[k],cls='p1-chip locked';if(pr.indexOf(k)>-1)cls+=' correct';else if(al.indexOf(k)>-1)cls+=' also';else if(an.pk.indexOf(k)>-1)cls+=' miss';var mk=pr.indexOf(k)>-1?' \u2713':al.indexOf(k)>-1?' \u25D0':'';return'<div class="'+cls+'" style="'+(pr.indexOf(k)>-1?'border-color:#5BBF8A;background:rgba(91,191,138,.1)':al.indexOf(k)>-1?'border-color:#84D3F1;background:rgba(132,211,241,.06)':'')+'"><span class="em">'+d.e+'</span>'+d.n+mk+'</div>'}).join('');
+  a.innerHTML='<div class="p1-wrap">'+BBL+'<div class="p1-phase"><span class="p1-counter">'+s.num+'</span>\uD83D\uDD0D Phase 1: The Quick Read</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="chat-bubble"><div class="text">'+s.text+'</div></div>'
+    +'<div class="p1-chips">'+chips+'</div>'
+    +'</div><div class="ls-right">'
+    +'<div class="p1-reveal-notif" id="p1reveal"><div class="hdr">'+ic+'<span class="title">'+ti+'</span></div>'
+    +'<div class="body">'+s.expl+'<div class="tag">\uD83D\uDCA1 '+s.tag+'</div></div></div>'
+    +'<button class="p1-lock" onclick="nxt()" style="margin-top:16px">Next \u2192</button>'
+    +'</div></div></div>';
+  setTimeout(function(){var rv=document.getElementById("p1reveal");if(rv)rv.scrollIntoView({behavior:"smooth",block:"center"})},100);
+}
+
+/* ═══ PHASE 2 ═══ */
+function rP2(a){
+  var s=SC[st.i],sel=st.pk[0]||null;
+  var chips=DK.map(function(k){var d=D[k],isSel=k===sel;return'<div class="p2-chip'+(isSel?' sel':'')+'" onclick="pk1(\''+k+'\')" style="'+(isSel?'border-color:'+d.c+';background:'+d.c+'12':'')+'"><span class="em">'+d.e+'</span>'+d.n+'</div>'}).join('');
+  a.innerHTML='<div class="p2-wrap">'+BB+'<div class="p2-phase"><span class="p2-counter">'+s.num+'</span>\uD83D\uDD04 Phase 2: The Flip</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="flip-front"><div class="sc-num">'+s.num+'</div><div class="sc-text">'+s.text+'</div><div class="sc-detail">'+s.detail+'</div></div>'
+    +'</div><div class="ls-right">'
+    +'<div class="p2-prompt">\uD83D\uDD04 What\u2019s the primary Wellness Dimension at play?</div>'
+    +'<div class="p2-chips">'+chips+'</div>'
+    +'<button class="p2-lock" onclick="sub2()"'+(sel?'':' disabled')+'>That\u2019s my answer</button>'
+    +'</div></div></div>';
+}
+
+function rP2R(a){
+  var an=st.ans[st.ans.length-1],s=SC[st.i],pr=s.primary[0],pk=an.pk[0];
+  var yourD=D[pk],actD=D[pr],isRight=pk===pr;
+  var splitHTML='';
+  if(!isRight){
+    splitHTML='<div class="split-row">'
+      +'<div class="split-box"><div class="lbl" style="color:#8A8780">You picked</div><span class="em">'+yourD.e+'</span><div class="nm" style="color:'+yourD.c+'">'+yourD.n+'</div></div>'
+      +'<div class="split-arrow">\u2192</div>'
+      +'<div class="split-box"><div class="lbl" style="color:#5BBF8A">Primary</div><span class="em">'+actD.e+'</span><div class="nm" style="color:'+actD.c+'">'+actD.n+'</div></div></div>';
+  }
+  var backContent='<div class="reframe-label">'+(isRight?'\u2713 You saw through it':'\uD83D\uDD04 The reframe')+'</div>'
+    +splitHTML
+    +'<div class="expl">'+s.expl+'<div class="tag">\uD83D\uDCA1 '+s.tag+'</div></div>';
+
+  a.innerHTML='<div class="p2-wrap">'+BB+'<div class="p2-phase"><span class="p2-counter">'+s.num+'</span>\uD83D\uDD04 Phase 2: The Flip</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="flip-front" style="opacity:.5"><div class="sc-num">'+s.num+'</div><div class="sc-text">'+s.text+'</div><div class="sc-detail">'+s.detail+'</div></div>'
+    +'</div><div class="ls-right">'
+    +'<div class="flip-container"><div class="flip-back">'+backContent+'</div></div>'
+    +'<button class="p2-lock" onclick="nxt()" style="margin-top:8px">Next \u2192</button>'
+    +'</div></div></div>';
+}
+
+/* ═══ PHASE 3 ═══ */
+function rP3(a){
+  var s=SC[st.i];
+  var hint=st.pk.length===0?"Tap two dimensions below":st.pk.length===1?"One more\u2026":"Two selected \u2014 lock it in!";
+  var cards=DK.map(function(k){
+    var d=D[k],used=st.pk.indexOf(k)>-1,full=st.pk.length>=2&&!used;
+    var sty=used?"border-color:"+d.c+";background:"+d.c+"12;box-shadow:0 4px 16px "+d.c+"20":full?";opacity:.35;cursor:not-allowed":"";
+    var nSty=used?" style=\"color:"+d.c+"\"":"";
+    return"<div class=\"p3-card"+(used?" sel":"")+(full?" dis":"")+"\" onclick=\"pk3t('"+k+"')\" style=\""+sty+"\"><span class=\"em\">"+d.e+"</span><span class=\"nm\""+nSty+">"+d.n+"</span><span class=\"vb\">"+d.v+"</span></div>";
+  }).join("");
+
+  a.innerHTML='<div class="p3-wrap">'+BB+'<div class="p3-phase"><span class="p3-counter">'+s.num+'</span>\uD83D\uDD17 Phase 3: The Tangle</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="p3-scenario"><div class="sc-num">'+s.num+'</div><div class="sc-text">'+s.text+'</div><div class="sc-detail">'+s.detail+'</div></div>'
+    +'</div><div class="ls-right">'
+    +'<div class="p3-prompt">\uD83D\uDD17 Which two Wellness Dimensions are equally at play here?</div>'
+    +'<p style="text-align:center;font-size:12px;color:#8A8780;margin-bottom:14px">'+hint+'</p>'
+    +'<div class="p3-grid">'+cards+'</div>'
+    +'<button class="p3-lock" onclick="sub3()"'+(st.pk.length>=2?'':' disabled')+'>That\u2019s my answer</button>'
+    +'</div></div></div>';
+}
+
+function rP3R(a){
+  var an=st.ans[st.ans.length-1],s=SC[st.i],pr=s.primary;
+  var ic,ti;
+  if(an.r==='exact'){ic='\uD83C\uDFAF';ti='Both dimensions. Nailed it.';}
+  else if(an.r==='partial'){ic='\u25D0';ti='You got one \u2014 here\u2019s the full picture.';}
+  else{ic='\u2717';ti='Not quite \u2014 but this is the hardest phase.';}
+  var dims=pr.map(function(k){var d=D[k];return'<div class="dim-tag" style="background:'+d.c+'15;color:'+d.c+'">'+d.e+' '+d.n+'</div>'}).join('');
+  a.innerHTML='<div class="p3-wrap">'+BB+'<div class="p3-phase"><span class="p3-counter">'+s.num+'</span>\uD83D\uDD17 Phase 3: The Tangle</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div class="p3-scenario"><div class="sc-num">'+s.num+'</div><div class="sc-text">'+s.text+'</div></div>'
+    +'</div><div class="ls-right">'
+    +'<div class="p3-reveal"><div class="hdr"><span class="icon">'+ic+'</span><span class="title">'+ti+'</span></div>'
+    +'<div class="dims">'+dims+'</div>'
+    +'<div class="body">'+s.expl+'<div class="tag">\uD83D\uDCA1 '+s.tag+'</div></div></div>'
+    +'<button class="p3-lock" onclick="nxt()">Next \u2192</button>'
+    +'</div></div></div>';
+}
+
+/* ═══ PHASE 4 ═══ */
+function rC1(a){
+  var s=SC[st.i];
+  a.innerHTML='<div class="p4-wrap">'+BB+'<div class="p4-phase"><span class="p4-counter">'+s.num+'</span><br>\u26D3\uFE0F Phase 4: The Chain</div>'
+    +'<div class="typewriter" id="tw"></div>'
+    +'<div class="type-detail">'+s.detail+'</div>'
+    +'<button class="p4-btn" style="background:#F7B41B;color:#27265F" onclick="cP2()">There\u2019s more to this story \u2192</button></div>';
+  typewrite(s.text,document.getElementById('tw'));
+}
+
+function rC2(a){
+  var s=SC[st.i];
+  a.innerHTML='<div class="p4-wrap">'+BB+'<div class="p4-phase">\u26D3\uFE0F Phase 4: The Chain</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:18px;font-weight:600;text-align:center;max-width:420px;margin:20px auto;line-height:1.45;opacity:.5">'+s.text+'</div>'
+    +'<div class="p4-part2"><div class="lbl">Part 2 \u2014 The real story</div><div class="txt">'+s.part2+'</div></div>'
+    +'<p style="text-align:center;font-size:14px;color:#C4A0E8;font-weight:600;margin-bottom:24px">How many Wellness Dimensions does one situation touch?</p>'
+    +'<button class="p4-btn" style="background:#C4A0E8;color:#0a0a0f" onclick="cReveal()">Show the cascade \u2192</button></div>';
+}
+
+function rCR(a){
+  var s=SC[st.i];
+  var chain=s.chain.map(function(c,i){
+    var d=D[c.d],last=i===s.chain.length-1;
+    var del=i*0.4;
+    return'<div class="ct-step"><div class="ct-track">'
+      +'<div class="ct-dot" style="background:#3A3A5A;animation-delay:'+del+'s"></div>'
+      +(last?'':'<div class="ct-line" style="background:#2A2A4A;animation-delay:'+(del+.2)+'s"></div>')
+      +'</div><div class="ct-info" style="animation-delay:'+del+'s"><div class="ct-dim" style="color:#F0EDE6">'+d.e+' '+d.n+'</div><div class="ct-note">'+c.n+'</div></div></div>';
+  }).join('');
+  a.innerHTML='<div class="p4-wrap" style="justify-content:flex-start;padding-top:40px">'+BB+'<div class="p4-phase">\u26D3\uFE0F The Cascade</div>'
+    +'<div class="ls-grid"><div class="ls-left">'
+    +'<div style="font-family:Fraunces,serif;font-size:16px;font-weight:600;text-align:center;max-width:400px;margin:0 auto 8px;opacity:.5;line-height:1.4">'+s.text+'</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:16px;font-weight:600;text-align:center;max-width:400px;margin:0 auto 28px;color:#F7B41B;line-height:1.4">'+s.part2+'</div>'
+    +'</div><div class="ls-right">'
+    +'<div class="cascade-timeline">'+chain+'</div>'
+    +'<button class="p4-btn" style="background:#C4A0E8;color:#0a0a0f;margin-top:8px" onclick="st.scr=\'ce\';R();s0()">Next \u2192</button>'
+    +'</div></div></div>';
+}
+
+function rCE(a){
+  var s=SC[st.i];
+  a.innerHTML='<div class="p4-wrap" style="justify-content:flex-start;padding-top:40px">'+BB+'<div class="p4-phase">\u26D3\uFE0F One Situation. Five Dimensions.</div>'
+    +'<div class="p4-expl" style="animation:fadeIn .4s ease"><div class="body">'+s.expl+'<div class="tag">\u26D3\uFE0F '+s.tag+'</div></div></div>'
+    +'<button class="p4-btn" style="background:#C4A0E8;color:#0a0a0f;margin-top:8px" onclick="goRes()">See my results \u2192</button></div>';
+}
+
+/* ═══ RESULTS ═══ */
+function rRes(a){
+  var scored=st.ans.filter(function(x){return x.r!=='cascade'});
+  var exact=scored.filter(function(x){return x.r==='exact'}).length;
+  var partial=scored.filter(function(x){return x.r==='partial'}).length;
+  var total=scored.length;
+  var title=exact>=5?'Wellness Mastermind':exact>=3?'Sharp Detective':'You Found the Overlaps';
+  var msg=exact>=5?"You read situations with real depth. When life gets complicated, you\u2019ll know which dimensions need attention."
+    :exact>=3?"Strong instincts. The ones that tripped you? That\u2019s the point \u2014 the hardest scenarios matter most."
+    :"That\u2019s the lesson. Your wellbeing is one connected system. The \u201Cwrong\u201D answers were usually touching something real.";
+  var counts={};st.ans.forEach(function(an){an.pk.forEach(function(k){counts[k]=(counts[k]||0)+1})});
+  var maxC=Math.max.apply(null,DK.map(function(k){return counts[k]||0}).concat([1]));
+  var bars=DK.map(function(k){var d=D[k],c=counts[k]||0;return'<div class="pat-bar"><span class="em">'+d.e+'</span><span class="nm">'+d.n+'</span><div class="track"><div class="fill" style="width:'+(c/maxC*100)+'%;background:'+d.c+'"></div></div><span class="ct">'+c+'</span></div>'}).join('');
+
+  a.innerHTML='<div class="results-wrap">'+BB+'<div class="header"><div class="res-score">'+exact+'/'+total+'</div>'
+    +'<div class="res-sub">'+exact+' exact'+(partial?' \u00B7 '+partial+' close':'')+' of '+total+' scored</div>'
+    +'<div class="res-title">'+title+'</div><p class="res-msg">'+msg+'</p></div>'
+    +'<div class="pattern-card"><h3>Your pattern</h3><p class="sub">Which dimensions did you notice most?</p>'+bars+'</div>'
+    +'<div class="res-actions"><button class="export-btn" onclick="exportJPEG()">\uD83D\uDCF7 Save my results</button>'
+    +'<br><button class="restart-btn" onclick="st.scr=\'closing\';R();s0()">Continue \u2192</button></div></div>';
+}
+
+function rClosing(a){
+  a.innerHTML='<div class="results-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">'
+    +BB
+    +'<div style="margin-bottom:32px;animation:fadeUp .5s ease">'
+    +'<div style="font-size:36px;margin-bottom:16px">\uD83D\uDD17</div>'
+    +'<h2 style="font-family:Fraunces,serif;font-size:26px;font-weight:800;color:#F0EDE6;line-height:1.2;margin-bottom:16px">One System.<br>Not Seven Boxes.</h2>'
+    +'</div>'
+    +'<div style="max-width:400px;margin:0 auto;animation:fadeUp .5s ease .15s both">'
+    +'<p style="font-size:15px;line-height:1.8;color:#C4C0B8;margin-bottom:20px">Your Wellness Dimensions don\u2019t exist in isolation. When one shifts, the others feel it \u2014 sometimes obviously, sometimes quietly in the background.</p>'
+    +'<p style="font-size:15px;line-height:1.8;color:#C4C0B8;margin-bottom:20px">That\u2019s not a problem. That\u2019s the design. It means a small change in one area can ripple outward in ways you didn\u2019t expect \u2014 for better or worse.</p>'
+    +'<p style="font-size:15px;line-height:1.8;color:#F0EDE6;font-weight:600;margin-bottom:32px">The most powerful thing you can do is check in. Regularly. Not to fix everything \u2014 just to notice where you are across all seven dimensions, so nothing builds up in silence.</p>'
+    +'</div>'
+    +'<div class="res-actions" style="animation:fadeUp .5s ease .3s both"><button class="export-btn" onclick="exportJPEG()">\uD83D\uDCF7 Save my results</button><br><button class="restart-btn" onclick="restart()">\uD83D\uDD04 Play again</button></div></div>';
+}
+
+/* ═══ TYPEWRITER ═══ */
+function typewrite(txt,el){
+  el.innerHTML='';var i=0;
+  var iv=setInterval(function(){
+    if(i<txt.length){el.innerHTML=txt.slice(0,i+1)+'<span class="type-cursor"></span>';i++}
+    else{el.innerHTML=txt;clearInterval(iv)}
+  },28);
+}
+
+/* ═══ LOGIC ═══ */
+function go(){st={scr:'p1i',i:0,pk:[],ans:[],flipped:false};R();s0()}
+function goBack(){
+  var s=st.scr;
+  if(s==='p1i'){st.scr='intro';R();s0();return}
+  if(s==='p1'){st.scr='p1i';st.pk=[];R();s0();return}
+  if(s==='p1r'){st.ans.pop();st.scr='p1';st.pk=[];R();s0();return}
+  if(s==='p2i'){st.i=1;st.scr='p1r';R();s0();return}
+  if(s==='p2'){st.scr='p2i';st.pk=[];R();s0();return}
+  if(s==='p2r'){st.ans.pop();st.scr='p2';st.pk=[];R();s0();return}
+  if(s==='p3i'){st.i=3;st.scr='p2r';R();s0();return}
+  if(s==='p3'){st.scr='p3i';st.pk=[];R();s0();return}
+  if(s==='p3r'){st.ans.pop();st.scr='p3';st.pk=[];R();s0();return}
+  if(s==='p4i'){st.i=5;st.scr='p3r';R();s0();return}
+  if(s==='c1'){st.scr='p4i';R();s0();return}
+  if(s==='c2'){st.scr='c1';R();s0();return}
+  if(s==='cr'){st.ans.pop();st.scr='c2';R();s0();return}
+  if(s==='ce'){st.scr='cr';R();s0();return}
+  if(s==='results'){st.scr='ce';R();s0();return}
+  if(s==='closing'){st.scr='results';R();s0();return}
+}
+function pk1(k){st.pk=[k];R()}
+function sub1(){if(!st.pk.length)return;var s=SC[st.i],r=sc(s,st.pk);st.ans.push({i:st.i,pk:st.pk.slice(),r:r});st.scr='p1r';R();s0()}
+function sub2(){if(!st.pk.length)return;var s=SC[st.i],r=sc(s,st.pk);st.ans.push({i:st.i,pk:st.pk.slice(),r:r});st.scr='p2r';R();s0()}
+function pk3(k){if(st.pk.indexOf(k)>-1||st.pk.length>=2)return;st.pk.push(k);R()}
+function unpk3(k){st.pk=st.pk.filter(function(p){return p!==k});R()}
+function pk3t(k){if(st.pk.indexOf(k)>-1){st.pk=st.pk.filter(function(p){return p!==k});R()}else if(st.pk.length<2){st.pk.push(k);R()}}
+function sub3(){if(st.pk.length<2)return;var s=SC[st.i],r=sc(s,st.pk);st.ans.push({i:st.i,pk:st.pk.slice(),r:r});st.scr='p3r';R();s0()}
+function cP2(){st.scr='c2';R();s0()}
+function cReveal(){st.ans.push({i:st.i,pk:[],r:'cascade'});st.scr='cr';R();s0()}
+function goRes(){st.scr='results';R();s0()}
+function restart(){st={scr:'intro',i:0,pk:[],ans:[],flipped:false};R();s0()}
+
+function nxt(){
+  var prevP=SC[st.i].p;
+  st.i++;st.pk=[];st.flipped=false;
+  var s=SC[st.i];
+  var newP=s.cascade?4:s.p;
+  if(newP!==prevP){
+    if(newP===2)st.scr='p2i';
+    else if(newP===3)st.scr='p3i';
+    else if(newP===4)st.scr='p4i';
+  }else{
+    if(s.cascade)st.scr='c1';
+    else if(s.p===1)st.scr='p1';
+    else if(s.p===2)st.scr='p2';
+    else if(s.p===3)st.scr='p3';
+  }
+  R();s0();
+}
+
+function s0(){window.scrollTo({top:0,behavior:'smooth'})}
+
+/* ═══ JPEG EXPORT ═══ */
+function exportJPEG(){
+  var scored=st.ans.filter(function(x){return x.r!=='cascade'});
+  var exact=scored.filter(function(x){return x.r==='exact'}).length;
+  var partial=scored.filter(function(x){return x.r==='partial'}).length;
+  var total=scored.length;
+  var title=exact>=5?'Wellness Mastermind':exact>=3?'Sharp Detective':'You Found the Overlaps';
+  var counts={};st.ans.forEach(function(an){an.pk.forEach(function(k){counts[k]=(counts[k]||0)+1})});
+  var maxC=Math.max.apply(null,DK.map(function(k){return counts[k]||0}).concat([1]));
+
+  var c=document.createElement('canvas');c.width=1080;c.height=1350;
+  var x=c.getContext('2d');x.scale(2,2);var w=540,h=675;
+
+  // bg
+  x.fillStyle='#111118';x.fillRect(0,0,w,h);
+
+  // badge
+  x.fillStyle='#F56042';x.font='bold 10px DM Sans,sans-serif';x.textAlign='center';
+  x.fillText('DIMENSION DETECTIVE \u00B7 WELCOME TO WELLNESS',w/2,36);
+
+  // score
+  x.fillStyle='#F56042';x.font='bold 52px Georgia,serif';
+  x.fillText(exact+'/'+total,w/2,100);
+
+  // title
+  x.fillStyle='#F0EDE6';x.font='bold 22px Georgia,serif';
+  x.fillText(title,w/2,134);
+
+  x.fillStyle='#8A8780';x.font='12px DM Sans,sans-serif';
+  x.fillText(exact+' exact'+(partial?' \u00B7 '+partial+' close':'')+' of '+total+' scored',w/2,156);
+
+  // divider
+  x.fillStyle='#2A2A3A';x.fillRect(40,172,w-80,1);
+
+  // bars — preload icons then draw
+  var imgs={},loaded=0;
+  DK.forEach(function(k){
+    var img=new Image();img.src=ICO+k+'.png';
+    img.onload=img.onerror=function(){loaded++;imgs[k]=img;if(loaded===DK.length)drawBars()};
+  });
+  function drawBars(){
+  x.textAlign='left';var y=200;
+  DK.forEach(function(k){
+    var d=D[k],ct=counts[k]||0;
+    if(imgs[k])x.drawImage(imgs[k],40,y-10,16,16);
+    x.font='bold 12px DM Sans,sans-serif';x.fillStyle=d.c;x.fillText(d.n,64,y+4);
+    x.fillStyle='#2A2A3A';rr(x,155,y-6,290,8,4);x.fill();
+    if(ct>0){x.fillStyle=d.c;rr(x,155,y-6,290*(ct/maxC),8,4);x.fill();}
+    x.fillStyle='#8A8780';x.textAlign='right';x.font='bold 12px DM Sans,sans-serif';x.fillText(ct,500,y+4);
+    x.textAlign='left';y+=28;
+  });
+
+  // divider
+  y+=8;x.fillStyle='#2A2A3A';x.fillRect(40,y,w-80,1);y+=28;
+
+  x.textAlign='center';x.fillStyle='#5A5A6A';x.font='10px DM Sans,sans-serif';
+  x.fillText('sbf.kulalearn.com',w/2,y);
+
+  c.toBlob(function(b){
+    var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='dimension-detective-result.jpg';a.click();URL.revokeObjectURL(a.href);
+  },'image/jpeg',0.95);
+  } // end drawBars
+}
+
+function rr(x,rx,ry,rw,rh,r){x.beginPath();x.moveTo(rx+r,ry);x.lineTo(rx+rw-r,ry);x.quadraticCurveTo(rx+rw,ry,rx+rw,ry+r);x.lineTo(rx+rw,ry+rh-r);x.quadraticCurveTo(rx+rw,ry+rh,rx+rw-r,ry+rh);x.lineTo(rx+r,ry+rh);x.quadraticCurveTo(rx,ry+rh,rx,ry+rh-r);x.lineTo(rx,ry+r);x.quadraticCurveTo(rx,ry,rx+r,ry);x.closePath()}
+function wt(x,t,cx,cy,mw,lh){var ws=t.split(' '),ln='';ws.forEach(function(w){var ts=ln+w+' ';if(x.measureText(ts).width>mw&&ln!==''){x.fillText(ln.trim(),cx,cy);cy+=lh;ln=w+' '}else ln=ts});x.fillText(ln.trim(),cx,cy)}
+
+R();
+</script>
+</body>
+</html>
